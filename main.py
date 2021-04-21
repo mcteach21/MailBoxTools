@@ -13,8 +13,13 @@ def print_msg(msg):
 
 
 def read():
-    from_filter = input('from filter : ')
-    mc.read('FROM ' + from_filter)
+    from_filter = input('from filter : ') or ''
+    if from_filter != '':
+        from_filter = 'FROM ' + from_filter
+    else:
+        from_filter = 'ALL'
+
+    mc.read(from_filter)
     print_msg('Résultat : {}'.format(len(mc.mails)) + ' mail(s).')
 
     mail = mc.mails[38]
@@ -32,9 +37,9 @@ def clean():
 def connect_server():
     global mc
 
-    login = input('login : ')
+    # login = input('login : ')
     password = input('password : ')
-    mc = MailClient(0, 'yasmineouared@yahoo.fr', 'ldftmlvhkhswbvwe')
+    mc = MailClient(0, 'yasmineouared@yahoo.fr', password)
 
 
 if __name__ == '__main__':

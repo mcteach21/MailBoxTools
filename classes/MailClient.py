@@ -34,7 +34,14 @@ class MailClient:
 
     def delete(self, msg_num, to_trash=True):
         print('deleting..' + str(msg_num))
-        self.imap.store(msg_num, '+FLAGS', '\\Deleted')
+        # self.imap.store(msg_num, '+FLAGS', '\\Deleted')
+        # self.imap.uid('STORE', msg_num, '+X-GM-LABELS', '\\Trash')
+
+        # self.imap.store(msg_num, '+X-GM-LABELS', '\\Trash')
+        self.imap.uid('STORE', msg_num, '+X-GM-LABELS', '\\Trash')
+
+        # self.imap.store(msg_num, "+FLAGS", "\\Deleted")
+        print("mail deleted")
 
     def read(self, emails_filters='ALL'):
         if not self.logged:
@@ -45,6 +52,7 @@ class MailClient:
         print('reading mails..')
         status, data = self.imap.select("Inbox")
         msg_count = int(data[0])
+        print('messages count : {}'.format(msg_count))
 
         status, data = self.imap.search(None, emails_filters)
         if status != 'OK':
@@ -52,6 +60,7 @@ class MailClient:
 
         print('***************************************')
         msgs_ids = data[0].split()
+
         print('Nb. emails : {} (/{})'.format(len(msgs_ids), msg_count))
         print('***************************************')
 
