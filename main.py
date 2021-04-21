@@ -10,16 +10,12 @@ def print_msg(msg):
 
 
 def read():
-    from_filter = input('from filter : ') or 'ALL'
-    emails_params = {
-        'from_filter': from_filter,
-    }
-    mc.read(emails_params)
+    mc.read()
     print_msg('Résultat : {}'.format(len(mc.mails)) + ' mail(s).')
 
 
 def clean():
-    print('clean mails..')
+    print('Nettoyer mails..')
     mc.delete()
 
 
@@ -30,18 +26,18 @@ def connect_server():
     mc = MailClient(0, login, password)
 
 
-def test():
-    print('tests..')
+# def test():
+#     print('tests..')
 
 
 if __name__ == '__main__':
-    print_msg('Mails Tools')
+    print_msg('Ma Boite Mail')
 
     connect_server()
     menu = Menu([
-        Option('Read Mails', read),
-        Option('Clean Mails', clean),
-        Option('Tests', test)
+        Option('Boite Mail : Lire!', read),
+        Option('Boite Mail : Nettoyer!', clean)
+        # , Option('Tests', test)
     ])
     while not menu.want_exit:
         menu.show()
