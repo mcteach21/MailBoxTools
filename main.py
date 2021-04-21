@@ -1,6 +1,3 @@
-import datetime
-import email
-
 from classes.MailClient import MailClient
 from classes.Menu import Menu
 from classes.Option import Option
@@ -13,42 +10,38 @@ def print_msg(msg):
 
 
 def read():
-    from_filter = input('from filter : ') or ''
-    if from_filter != '':
-        from_filter = 'FROM ' + from_filter
-    else:
-        from_filter = 'ALL'
-
-    mc.read(from_filter)
+    from_filter = input('from filter : ') or 'ALL'
+    emails_params = {
+        'from_filter': from_filter,
+    }
+    mc.read(emails_params)
     print_msg('Résultat : {}'.format(len(mc.mails)) + ' mail(s).')
-
-    mail = mc.mails[38]
-    print(mail.num)
-    # date = datetime.datetime.fromtimestamp(email.utils.mktime_tz(mail.email_date)).strftime("%d-%m-%Y %H:%M")
-    # print(date + ' - [' + mail.email_from + '] : ' + mail.email_subject)
 
 
 def clean():
     print('clean mails..')
-    msg_num = input('num message to delete : ')
-    mc.delete(msg_num)
+    mc.delete()
 
 
 def connect_server():
     global mc
-
-    # login = input('login : ')
+    login = input('login : ')
     password = input('password : ')
-    mc = MailClient(0, 'yasmineouared@yahoo.fr', password)
+    mc = MailClient(0, login, password)
+
+
+def test():
+    print('tests..')
 
 
 if __name__ == '__main__':
     print_msg('Mails Tools')
-    connect_server()
 
+    connect_server()
     menu = Menu([
         Option('Read Mails', read),
-        Option('Clean Mails', clean)
+        Option('Clean Mails', clean),
+        Option('Tests', test)
     ])
     while not menu.want_exit:
         menu.show()

@@ -32,18 +32,34 @@ class MailClient:
         self.imap.close()
         self.imap.logout()
 
-    def delete(self, msg_num, to_trash=True):
-        print('deleting..' + str(msg_num))
-        # self.imap.store(msg_num, '+FLAGS', '\\Deleted')
-        # self.imap.uid('STORE', msg_num, '+X-GM-LABELS', '\\Trash')
+    def delete(self, to_trash=False):
+        # if to_trash:
+        #     # self.imap.uid('STORE', msg_num, '+X-GM-LABELS', '\\Trash')
+        #     pass
+        # else:
 
-        # self.imap.store(msg_num, '+X-GM-LABELS', '\\Trash')
-        self.imap.uid('STORE', msg_num, '+X-GM-LABELS', '\\Trash')
+        from_filter = input('from filter : ') or 'ALL'
+        emails_params = {
+            'from_filter': from_filter,
+        }
+        self.read(emails_params)
 
-        # self.imap.store(msg_num, "+FLAGS", "\\Deleted")
-        print("mail deleted")
+        if len(self.mails) == 0:
+            print("Aucun mail trouvé!")
+        else:
+            nb = len(self.mails)
+            print("%d email(s) trouvé(s).." % nb)
 
-    def read(self, emails_filters='ALL'):
+            yes_no = input('Etes-vous sûr de vouloir Supprimer ces %d mails [o/N]? : ' % nb)
+            print('yes_no = {}'.format(yes_no))
+
+            if yes_no == 'o':
+                for mail in self.mails:
+                    print('delete..{}'.format(mail.num))
+                    # self.imap.store(mail.num, "+FLAGS", "\\Deleted")
+                print("%d email(s) supprimé(s)!" % nb)
+
+    def read(self, emails_params):
         if not self.logged:
             print('not logged! cannot read.')
             return
@@ -52,15 +68,21 @@ class MailClient:
         print('reading mails..')
         status, data = self.imap.select("Inbox")
         msg_count = int(data[0])
-        print('messages count : {}'.format(msg_count))
+        # print('messages count : {}'.format(msg_count))
 
-        status, data = self.imap.search(None, emails_filters)
+        from_filter = emails_params['from_filter']
+        print('from_filter = '+from_filter)
+
+        date = (datetime.date.today() - datetime.timedelta(1)).strftime("%d-%b-%Y")
+
+        # status, data = self.imap.search(None, ('UNSEEN'), '(SENTSINCE {0})'.format(date),
+        #                                 '(FROM {0})'.format("Groupon".strip()))
+        status, data = self.imap.search(None,  '(SENTSINCE {0})'.format(date), '(FROM {0})'.format("Groupon".strip()))
         if status != 'OK':
             print('No messages found!')
 
         print('***************************************')
         msgs_ids = data[0].split()
-
         print('Nb. emails : {} (/{})'.format(len(msgs_ids), msg_count))
         print('***************************************')
 
@@ -69,10 +91,9 @@ class MailClient:
         for num in msgs_ids:
             status, data = self.imap.fetch(num, '(RFC822)')
             if status != 'OK':
-                print('ERROR getting message : ', num)
+                print('Erreur lecture mail : ', num)
 
             msg = email.message_from_bytes(data[0][1])
-
             msg_from = msg['From']
             try:
                 hdr = email.header.make_header(email.header.decode_header(msg['Subject']))
@@ -86,17 +107,8 @@ class MailClient:
                 local_date = datetime.datetime.fromtimestamp(email.utils.mktime_tz(msg_date))
                 msg_date_formatted = local_date.strftime("%d-%m-%Y %H:%M")
 
-            # print('N° Message : ', num)
-            # print(msg_date_formatted+' : '+format(msg['From']))
-            # print(subject)
-
             self.mails.append(Mail(num, msg_date, msg_from, msg_subject, '..'))
             print(str(num) + ' ' + msg_date_formatted + ' - [' + msg_from + '] : ' + msg_subject)
-
-            # if msg.is_multipart():
-            #     print('is_multipart')
-            # else:
-            #     print('not multipart - i.e. plain text, no attachments')
 
             # if msg.is_multipart():
             #     for part in msg.walk():
